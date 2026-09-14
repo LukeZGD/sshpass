@@ -12,6 +12,26 @@ AC_USE_SYSTEM_EXTENSIONS
 # Checks for programs.
 AC_PROG_CC
 
+# Universal macOS build.
+AC_ARG_ENABLE([universal],
+        [AS_HELP_STRING([--enable-universal],
+                [Build universal macOS binaries for x86_64 and arm64])],
+        [enable_universal=$enableval],
+        [enable_universal=no])
+
+AS_IF([test "x$enable_universal" = "xyes"], [
+        AS_CASE(["`uname -s`"],
+                [Darwin], [
+                        AC_MSG_NOTICE([Enabling universal macOS build])
+
+                        CFLAGS="$CFLAGS -arch x86_64 -arch arm64"
+                        LDFLAGS="$LDFLAGS -arch x86_64 -arch arm64"
+                ],
+                [
+                        AC_MSG_ERROR([--enable-universal is only supported on macOS])
+                ])
+])
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -33,8 +53,11 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([select posix_openpt strdup])
 
 AC_ARG_ENABLE([password-prompt],
-        [AS_HELP_STRING([--enable-password-prompt=prompt], [Provide alternative ssh password prompt to look for.])],
-        [AC_DEFINE_UNQUOTED([PASSWORD_PROMPT], ["$enable_password_prompt"], [Password prompt to use])],
+        [AS_HELP_STRING([--enable-password-prompt=prompt],
+                [Provide alternative ssh password prompt to look for.])],
+        [AC_DEFINE_UNQUOTED([PASSWORD_PROMPT],
+                ["$enable_password_prompt"],
+                [Password prompt to use])],
         [AC_DEFINE([PASSWORD_PROMPT], ["assword"])])
 
 AC_CONFIG_FILES([Makefile])
